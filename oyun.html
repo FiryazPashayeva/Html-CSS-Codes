@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="az-AZ">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="google" content="notranslate">
+  <title>Firyaz's Game World 🎀</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">    <span class="corner-decoration-bottom-left">🍓</span>
+    <span class="corner-decoration-bottom-right">🧸</span>
+
+    <header>
+      <span class="sub-title">WELCOME TO</span>
+      <h1 class="main-title">Firyaz's Game World</h1>
+    </header>
+
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="switchGame('diceGame')">🎲 Zər Oyunu</button>
+      <button class="tab-btn" onclick="switchGame('guessGame')">✨ Təxmin Oyunu</button>
+    </div>
+
+    <div id="diceGame" class="game-section active">
+      <div class="form-group">
+        <label for="diceNumber">Ədədinizi seçin (2 - 12):</label>
+        <input type="number" id="diceNumber" min="0" max="12" placeholder="Məsələn: 7">
+      </div>
+
+      <button class="btn" onclick="playDiceGame()">Zərləri At</button>
+
+      <div class="dice-container" id="diceDisplay" style="display: none;">
+        <div class="dice" id="dice1">1</div>
+        <div class="dice" id="dice2">1</div>
+      </div>
+
+      <div class="message-box" id="diceResult">
+        Ədəd daxil edin və zərləri atın ✨
+      </div>
+    </div>
+
+    
+    <div id="guessGame" class="game-section">
+      <div id="setupStage">
+        <div class="form-group">
+          <label for="maxNumber">Maksimum ədədi təyin edin:</label>
+          <input type="number" id="maxNumber" min="1" placeholder="Məsələn: 50">
+        </div>
+        <button class="btn" onclick="startGuessGame()">Başla</button>
+      </div>
+
+      <div id="playStage" style="display: none;">
+        <div class="form-group">
+          <label for="guessInput">Təxmininiz:</label>
+          <input type="number" id="guessInput" placeholder="Ədədi yazın">
+        </div>
+        <button class="btn" onclick="makeGuess()">Təxmin Et</button>
+        <button class="btn btn-secondary" onclick="resetGuessGame()">Yenidən Başla</button>
+      </div>
+
+      <div class="message-box" id="guessResult">
+        Maksimum ədədi daxil edib başlayın ✨
+      </div>
+    </div>
+  </div>
+
+  <script>
+    
+    function switchGame(gameId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.game-section').forEach(sec => sec.classList.remove('active'));
+
+      if(gameId === 'diceGame') {
+        event.target.classList.add('active');
+        document.getElementById('diceGame').classList.add('active');
+      } else {
+        event.target.classList.add('active');
+        document.getElementById('guessGame').classList.add('active');
+      }
+    }
+
+    function playDiceGame() {
+      const input = document.getElementById('diceNumber');
+      const val = parseInt(input.value);
+      const diceDisplay = document.getElementById('diceDisplay');
+      const resultBox = document.getElementById('diceResult');
+      const d1 = document.getElementById('dice1');
+      const d2 = document.getElementById('dice2');
+
+      resultBox.classList.remove('win', 'lose');
+
+      if (isNaN(val)) {
+        resultBox.innerHTML = "Lütfən bir ədəd daxil edin!";
+        return;
+      }
+
+      if (val === 0) {
+        diceDisplay.style.display = 'none';
+        resultBox.innerHTML = "0 daxil etmək olmaz";
+        input.value = '';
+        return;
+      }
+
+      if (val >= 2 && val <= 12) {
+        d1.classList.add('roll');
+        d2.classList.add('roll');
+
+        setTimeout(() => {
+          d1.classList.remove('roll');
+          d2.classList.remove('roll');
+        }, 300);
+
+        const dice1 = Math.floor(Math.random() * 6) + 1;
+        const dice2 = Math.floor(Math.random() * 6) + 1;
+        const sum = dice1 + dice2;
+
+        d1.innerText = dice1;
+        d2.innerText = dice2;
+        diceDisplay.style.display = 'flex';
+
+        if (val === sum) {
+          resultBox.classList.add('win');
+          resultBox.innerHTML = `<b>🎉 Təbriklar! Siz Qazandınız!</b> <span class="badge">Zərlərin Cəmi: ${sum}</span>`;
+        } else {
+          resultBox.classList.add('lose');
+          resultBox.innerHTML = `<b>😏 Firyaz qazandı! Siz məğlub oldunuz.</b> <span class="badge">Zərlərin Cəmi: ${sum}</span>`;
+        }
+      } else {
+        diceDisplay.style.display = 'none';
+        resultBox.innerHTML = "2 ilə 12 arasında ədəd seçin!";
+      }
+    }
+
+    let targetNumber = null;
+    let attempts = 0;
+
+    function startGuessGame() {
+      const maxInput = document.getElementById('maxNumber');
+      const maxVal = parseInt(maxInput.value);
+      const resultBox = document.getElementById('guessResult');
+
+      resultBox.classList.remove('win', 'lose');
+
+      if (isNaN(maxVal) || maxVal <= 0) {
+        resultBox.innerHTML = "Düzgün ədəd daxil edin!";
+        return;
+      }
+
+      targetNumber = Math.floor(Math.random() * maxVal) + 1;
+      attempts = 0;
+
+      document.getElementById('setupStage').style.display = 'none';
+      document.getElementById('playStage').style.display = 'block';
+      resultBox.innerHTML = `1 ilə ${maxVal} arasında ədəd tutuldu. Təxmin edin! ✨`;
+    }
+
+    function makeGuess() {
+      const guessInput = document.getElementById('guessInput');
+      const guess = parseInt(guessInput.value);
+      const resultBox = document.getElementById('guessResult');
+
+      resultBox.classList.remove('win', 'lose');
+
+      if (isNaN(guess)) {
+        resultBox.innerHTML = "Lütfən təxmininizi yazın!";
+        return;
+      }
+
+      attempts++;
+
+      if (guess === targetNumber) {
+        resultBox.classList.add('win');
+        resultBox.innerHTML = `
+          <b>😃 Doğru tapdınız!</b>
+          <span class="badge">Cəhd sayı: ${attempts}</span>
+        `;
+        document.getElementById('guessInput').disabled = true;
+      } else if (guess > targetNumber) {
+        resultBox.innerHTML = `
+          <span>Daha kiçik ədəd daxil edin 👇</span>
+          <span class="badge">Cəhd sayı: ${attempts}</span>
+        `;
+      } else {
+        resultBox.innerHTML = `
+          <span>Daha böyük ədəd daxil edin 👆</span>
+          <span class="badge">Cəhd sayı: ${attempts}</span>
+        `;
+      }
+      
+      guessInput.value = '';
+      guessInput.focus();
+    }
+
+    function resetGuessGame() {
+      targetNumber = null;
+      attempts = 0;
+      const resultBox = document.getElementById('guessResult');
+      resultBox.classList.remove('win', 'lose');
+
+      document.getElementById('setupStage').style.display = 'block';
+      document.getElementById('playStage').style.display = 'none';
+      document.getElementById('guessInput').disabled = false;
+      document.getElementById('guessInput').value = '';
+      document.getElementById('maxNumber').value = '';
+      resultBox.innerHTML = "Maksimum ədədi daxil edib başlayın ✨";
+    }
+  </script>
+</body>
+</html>
